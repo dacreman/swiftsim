@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 ###############################################################################
- # This file is part of SWIFT.
- # Copyright (c) 2021 Mladen Ivkovic (mladen.ivkovic@hotmail.com)
- # 
- # This program is free software: you can redistribute it and/or modify
- # it under the terms of the GNU Lesser General Public License as published
- # by the Free Software Foundation, either version 3 of the License, or
- # (at your option) any later version.
- # 
- # This program is distributed in the hope that it will be useful,
- # but WITHOUT ANY WARRANTY; without even the implied warranty of
- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- # GNU General Public License for more details.
- # 
- # You should have received a copy of the GNU Lesser General Public License
- # along with this program.  If not, see <http://www.gnu.org/licenses/>.
- # 
- ##############################################################################
+# This file is part of SWIFT.
+# Copyright (c) 2021 Mladen Ivkovic (mladen.ivkovic@hotmail.com)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
 
 
 # --------------------------------------------------
@@ -95,7 +95,7 @@ class Rundata(object):
 
         self.hydro_controlled_injection = False
         self.use_const_emission_rate = False
-        self.has_stars = False #assume we don't have stars, check while reading in
+        self.has_stars = False  # assume we don't have stars, check while reading in
 
         self.ngroups = 0  # photon frequency groups
         self.const_emission_rates = None
@@ -228,11 +228,22 @@ def get_snap_data(prefix="output", skip_snap_zero=False, skip_last_snap=False):
         Gas.coords = data.gas.coordinates
         Gas.h = data.gas.smoothing_lengths
         Gas.PhotonEnergies = swiftsimio.cosmo_array(
-            [ getattr(data.gas.photon_energies, "group"+str(g)) for g in range(1, rundata.ngroups + 1) ]
+            [
+                getattr(data.gas.photon_energies, "group" + str(g))
+                for g in range(1, rundata.ngroups + 1)
+            ]
         ).T
 
         Gas.PhotonFluxes = swiftsimio.cosmo_array(
-            [ unyt.uvstack([getattr(data.gas.photon_fluxes, "Group"+str(g)+d) for d in ("X", "Y", "Z") ]) for g in range(1, rundata.ngroups+1)],
+            [
+                unyt.uvstack(
+                    [
+                        getattr(data.gas.photon_fluxes, "Group" + str(g) + d)
+                        for d in ("X", "Y", "Z")
+                    ]
+                )
+                for g in range(1, rundata.ngroups + 1)
+            ],
             data.gas.photon_fluxes.Group1X.units,
         ).T
 

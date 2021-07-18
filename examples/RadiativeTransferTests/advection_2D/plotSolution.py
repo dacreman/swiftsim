@@ -1,31 +1,30 @@
 #!/usr/bin/env python3
 ###############################################################################
- # This file is part of SWIFT.
- # Copyright (c) 2021 Mladen Ivkovic (mladen.ivkovic@hotmail.com)
- # 
- # This program is free software: you can redistribute it and/or modify
- # it under the terms of the GNU Lesser General Public License as published
- # by the Free Software Foundation, either version 3 of the License, or
- # (at your option) any later version.
- # 
- # This program is distributed in the hope that it will be useful,
- # but WITHOUT ANY WARRANTY; without even the implied warranty of
- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- # GNU General Public License for more details.
- # 
- # You should have received a copy of the GNU Lesser General Public License
- # along with this program.  If not, see <http://www.gnu.org/licenses/>.
- # 
- ##############################################################################
+# This file is part of SWIFT.
+# Copyright (c) 2021 Mladen Ivkovic (mladen.ivkovic@hotmail.com)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
 
 
-
-#----------------------------------------------------
+# ----------------------------------------------------
 # plot photon data for 2D problems
 # give snapshot number as cmdline arg to plot
 # single snapshot, otherwise this script plots
 # all snapshots available in the workdir
-#----------------------------------------------------
+# ----------------------------------------------------
 
 import sys
 import os
@@ -37,23 +36,16 @@ import matplotlib as mpl
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # Parameters users should/may tweak
-plot_all_data = True        # plot all groups and all photon quantities
-snapshot_base = "output"    # snapshot basename
-fancy = True                # fancy up the plots a bit?
+plot_all_data = True  # plot all groups and all photon quantities
+snapshot_base = "output"  # snapshot basename
+fancy = True  # fancy up the plots a bit?
 
 # parameters for imshow plots
-imshow_kwargs = {
-    "origin": "lower",
-    "cmap": 'viridis',
-}
+imshow_kwargs = {"origin": "lower", "cmap": "viridis"}
 
 
-projection_kwargs = {
-    "resolution": 1024, 
-    "parallel": True, 
-}
-#-----------------------------------------------------------------------
-
+projection_kwargs = {"resolution": 1024, "parallel": True}
+# -----------------------------------------------------------------------
 
 
 # Read in cmdline arg: Are we plotting only one snapshot, or all?
@@ -63,14 +55,15 @@ try:
 except IndexError:
     plot_all = True
 
-mpl.rcParams['text.usetex'] = True
+mpl.rcParams["text.usetex"] = True
+
 
 def get_snapshot_list(snapshot_basename="output"):
     """
     Find the snapshot(s) that are to be plotted 
     and return their names as list
     """
-    
+
     snaplist = []
 
     if plot_all:
@@ -87,7 +80,7 @@ def get_snapshot_list(snapshot_basename="output"):
             print("Didn't find file", fname)
             quit(1)
         snaplist.append(fname)
-    
+
     return snaplist
 
 
@@ -96,7 +89,7 @@ def remove_zeros(arr):
     Remove zeroes so lognormal color schemes
     are possible
     """
-    z = arr == 0.
+    z = arr == 0.0
     nonz = np.logical_not(z)
     if nonz.any():
         minval = arr[nonz].min()
@@ -105,6 +98,7 @@ def remove_zeros(arr):
     arr[z] = minval * 1e-3
     return arr
 
+
 def set_colorbar(ax, im):
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
@@ -112,7 +106,7 @@ def set_colorbar(ax, im):
     return
 
 
-def plot_photons(filename, energy_boundaries = None, flux_boundaries = None):
+def plot_photons(filename, energy_boundaries=None, flux_boundaries=None):
     """
     Create the actual plot.
 
@@ -136,10 +130,10 @@ def plot_photons(filename, energy_boundaries = None, flux_boundaries = None):
     imshow_kwargs["extent"] = [0, meta.boxsize[0].v, 0, meta.boxsize[1].v]
 
     for g in range(ngroups):
-        # workaround to access named columns data with swiftsimio visualisaiton 
+        # workaround to access named columns data with swiftsimio visualisaiton
         # add mass weights to remove surface density dependence in images
-        new_attribute_str = "mass_weighted_radiation_energy"+str(g+1)
-        en = getattr(data.gas.photon_energies, "group"+str(g+1))
+        new_attribute_str = "mass_weighted_radiation_energy" + str(g + 1)
+        en = getattr(data.gas.photon_energies, "group" + str(g + 1))
         en = remove_zeros(en)
         en *= data.gas.masses
         setattr(data.gas, new_attribute_str, en)
@@ -148,44 +142,51 @@ def plot_photons(filename, energy_boundaries = None, flux_boundaries = None):
             # prepare also the fluxes
             #  for direction in ["X", "Y", "Z"]:
             for direction in ["X", "Y"]:
-                new_attribute_str = "mass_weighted_radiation_flux"+str(g+1)+direction
-                f = getattr(data.gas.photon_fluxes, "Group"+str(g+1)+direction)
+                new_attribute_str = (
+                    "mass_weighted_radiation_flux" + str(g + 1) + direction
+                )
+                f = getattr(data.gas.photon_fluxes, "Group" + str(g + 1) + direction)
                 f = remove_zeros(f)
                 f *= data.gas.masses
                 setattr(data.gas, new_attribute_str, f)
 
     # get mass surface density projection that we'll use to remove density dependence in  impage
-    mass_map = swiftsimio.visualisation.projection.project_gas(data, project='masses', **projection_kwargs)
+    mass_map = swiftsimio.visualisation.projection.project_gas(
+        data, project="masses", **projection_kwargs
+    )
 
     if plot_all_data:
-        fig = plt.figure(figsize=(5*3, 5.05*ngroups), dpi=200)
-        figname = filename[:-5]+"-all-quantities.png"
-
+        fig = plt.figure(figsize=(5 * 3, 5.05 * ngroups), dpi=200)
+        figname = filename[:-5] + "-all-quantities.png"
 
         for g in range(ngroups):
-            
+
             # get energy projection
-            new_attribute_str = "mass_weighted_radiation_energy"+str(g+1)
-            photon_map = swiftsimio.visualisation.projection.project_gas(data, project=new_attribute_str, **projection_kwargs)
+            new_attribute_str = "mass_weighted_radiation_energy" + str(g + 1)
+            photon_map = swiftsimio.visualisation.projection.project_gas(
+                data, project=new_attribute_str, **projection_kwargs
+            )
             photon_map /= mass_map
 
-            ax  = fig.add_subplot(ngroups, 3, g*3+1)
+            ax = fig.add_subplot(ngroups, 3, g * 3 + 1)
             if energy_boundaries is not None:
                 imshow_kwargs["vmin"] = energy_boundaries[g][0]
                 imshow_kwargs["vmax"] = energy_boundaries[g][1]
             im = ax.imshow(photon_map.T, **imshow_kwargs)
             set_colorbar(ax, im)
-            ax.set_ylabel("Group {0:2d}".format(g+1))
+            ax.set_ylabel("Group {0:2d}".format(g + 1))
             ax.set_xlabel("x [$" + xlabel_units_str + "$]")
             if g == 0:
                 ax.set_title("Energies")
 
             # get flux X projection
-            new_attribute_str = "mass_weighted_radiation_flux"+str(g+1)+"X"
-            photon_map = swiftsimio.visualisation.projection.project_gas(data, project=new_attribute_str, **projection_kwargs)
+            new_attribute_str = "mass_weighted_radiation_flux" + str(g + 1) + "X"
+            photon_map = swiftsimio.visualisation.projection.project_gas(
+                data, project=new_attribute_str, **projection_kwargs
+            )
             photon_map /= mass_map
 
-            ax  = fig.add_subplot(ngroups, 3, g*3+2)
+            ax = fig.add_subplot(ngroups, 3, g * 3 + 2)
             if flux_boundaries is not None:
                 imshow_kwargs["vmin"] = flux_boundaries[g][0]
                 imshow_kwargs["vmax"] = flux_boundaries[g][1]
@@ -197,11 +198,13 @@ def plot_photons(filename, energy_boundaries = None, flux_boundaries = None):
                 ax.set_title("Flux X")
 
             # get flux Y projection
-            new_attribute_str = "mass_weighted_radiation_flux"+str(g+1)+"Y"
-            photon_map = swiftsimio.visualisation.projection.project_gas(data, project=new_attribute_str, **projection_kwargs)
+            new_attribute_str = "mass_weighted_radiation_flux" + str(g + 1) + "Y"
+            photon_map = swiftsimio.visualisation.projection.project_gas(
+                data, project=new_attribute_str, **projection_kwargs
+            )
             photon_map /= mass_map
 
-            ax  = fig.add_subplot(ngroups, 3, g*3+3)
+            ax = fig.add_subplot(ngroups, 3, g * 3 + 3)
             im = ax.imshow(photon_map.T, **imshow_kwargs)
             set_colorbar(ax, im)
             ax.set_xlabel("x [$" + xlabel_units_str + "$]")
@@ -209,30 +212,32 @@ def plot_photons(filename, energy_boundaries = None, flux_boundaries = None):
             if g == 0:
                 ax.set_title("Flux Y")
 
-    else: # plot just energies
+    else:  # plot just energies
 
-        fig = plt.figure(figsize=(5*ngroups, 5), dpi=200)
-        figname = filename[:-5]+".png"
+        fig = plt.figure(figsize=(5 * ngroups, 5), dpi=200)
+        figname = filename[:-5] + ".png"
 
         for g in range(ngroups):
-            
+
             # get projection
-            new_attribute_str = "mass_weighted_radiation_energy"+str(g+1)
-            photon_map = swiftsimio.visualisation.projection.project_gas(data, project=new_attribute_str, **projection_kwargs)
+            new_attribute_str = "mass_weighted_radiation_energy" + str(g + 1)
+            photon_map = swiftsimio.visualisation.projection.project_gas(
+                data, project=new_attribute_str, **projection_kwargs
+            )
             photon_map /= mass_map
 
-            ax  = fig.add_subplot(1, ngroups, g+1)
+            ax = fig.add_subplot(1, ngroups, g + 1)
             if energy_boundaries is not None:
                 imshow_kwargs["vmin"] = energy_boundaries[g][0]
                 imshow_kwargs["vmax"] = energy_boundaries[g][1]
             im = ax.imshow(photon_map.T, **imshow_kwargs)
             set_colorbar(ax, im)
-            ax.set_title("Group {0:2d}".format(g+1))
+            ax.set_title("Group {0:2d}".format(g + 1))
             if g == 0:
                 ax.set_ylabel("Energies")
 
     # Add title
-    title = filename.replace("_", "\_") # exception handle underscore for latex
+    title = filename.replace("_", "\_")  # exception handle underscore for latex
     if meta.cosmology is not None:
         title += ", $z$ = {0:.2e}".format(meta.z)
     title += ", $t$ = {0:.2e}".format(meta.time)
@@ -258,7 +263,7 @@ def get_minmax_vals(snaplist):
     energy_boundaries: list of [E_min, E_max] for each photon group
     flux_boundaries: list of [Fx_min, Fy_max] for each photon group
     """
-    
+
     emins = []
     emaxs = []
     fmins = []
@@ -276,15 +281,15 @@ def get_minmax_vals(snaplist):
         fluxmax_group = []
 
         for g in range(ngroups):
-            en = getattr(data.gas.photon_energies, "group"+str(g+1))
+            en = getattr(data.gas.photon_energies, "group" + str(g + 1))
             emin_group.append(en.min())
             emax_group.append(en.max())
 
             dirmin = []
             dirmax = []
             for direction in ["X", "Y"]:
-                new_attribute_str = "radiation_flux"+str(g+1)+direction
-                f = getattr(data.gas.photon_fluxes, "Group"+str(g+1)+direction)
+                new_attribute_str = "radiation_flux" + str(g + 1) + direction
+                f = getattr(data.gas.photon_fluxes, "Group" + str(g + 1) + direction)
                 dirmin.append(f.min())
                 dirmax.append(f.max())
             fluxmin_group.append(min(dirmin))
@@ -308,9 +313,8 @@ def get_minmax_vals(snaplist):
     return energy_boundaries, flux_boundaries
 
 
-
 if __name__ == "__main__":
-    
+
     snaplist = get_snapshot_list(snapshot_base)
     if fancy:
         energy_boundaries, flux_boundaries = get_minmax_vals(snaplist)
@@ -319,4 +323,6 @@ if __name__ == "__main__":
         flux_boundaries = None
 
     for f in snaplist:
-        plot_photons(f, energy_boundaries = energy_boundaries, flux_boundaries = flux_boundaries)
+        plot_photons(
+            f, energy_boundaries=energy_boundaries, flux_boundaries=flux_boundaries
+        )

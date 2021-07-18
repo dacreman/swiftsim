@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 ###############################################################################
- # This file is part of SWIFT.
- # Copyright (c) 2021 Mladen Ivkovic (mladen.ivkovic@hotmail.com)
- # 
- # This program is free software: you can redistribute it and/or modify
- # it under the terms of the GNU Lesser General Public License as published
- # by the Free Software Foundation, either version 3 of the License, or
- # (at your option) any later version.
- # 
- # This program is distributed in the hope that it will be useful,
- # but WITHOUT ANY WARRANTY; without even the implied warranty of
- # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- # GNU General Public License for more details.
- # 
- # You should have received a copy of the GNU Lesser General Public License
- # along with this program.  If not, see <http://www.gnu.org/licenses/>.
- # 
- ##############################################################################
+# This file is part of SWIFT.
+# Copyright (c) 2021 Mladen Ivkovic (mladen.ivkovic@hotmail.com)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published
+# by the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
 
 
 # -----------------------------------------------------------------------
@@ -58,7 +58,7 @@ float_particle_sum_comparison_tolerance = 5e-4
 # tolerance for meshless energy distribution scheme during injeciton comparison
 float_psi_comparison_tolerance = 5e-4
 
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 if len(argv) > 1:
@@ -105,7 +105,8 @@ def check_injection(snapdata, rundata):
             if not ok.all():
                 print("In snapshot", snap.snapnr, ":")
                 print(
-                    "Found NaNs/infs in star injected energies:", np.count_nonzero(ok == 0)
+                    "Found NaNs/infs in star injected energies:",
+                    np.count_nonzero(ok == 0),
                 )
                 if break_on_diff:
                     quit()
