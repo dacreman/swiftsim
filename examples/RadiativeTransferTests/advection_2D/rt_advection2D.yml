@@ -12,20 +12,20 @@ InternalUnitSystem:
 # Parameters governing the time integration
 TimeIntegration:
   time_begin: 0.     # The starting time of the simulation (in internal units).
-  time_end:   2.4e-1 # The end time of the simulation (in internal units).
-  dt_min:     1.e-10 # The minimal time-step size of the simulation (in internal units).
+  time_end:   3.4e-1 # The end time of the simulation (in internal units).
+  dt_min:     1.e-08 # The minimal time-step size of the simulation (in internal units).
   dt_max:     1.e-02 # The maximal time-step size of the simulation (in internal units).
 
 # Parameters governing the snapshots
 Snapshots:
   basename:            output # Common part of the name of output files
   time_first:          0.    # Time of the first output (in internal units)
-  delta_time: 0.024
+  delta_time:          0.034
 
 # Parameters governing the conserved quantities statistics
 Statistics:
   time_first:          0.
-  delta_time:          1. # Time between statistics output
+  delta_time:          0.034 # Time between statistics output
 
 # Parameters for the hydrodynamics scheme
 SPH:

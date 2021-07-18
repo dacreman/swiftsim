@@ -86,6 +86,8 @@ def get_snapshot_list(snapshot_basename="output"):
             if f.startswith(snapshot_basename) and f.endswith("hdf5"):
                 snaplist.append(f)
 
+        snaplist = sorted(snaplist)
+
     else:
         fname = snapshot_basename + "_" + str(snapnr).zfill(4) + ".hdf5"
         if not os.path.exists(fname):
