@@ -220,7 +220,10 @@ def check_hydro_sanity(snapdata):
         # check that we didn't loose any radiation
         # --------------------------------------------------------------
         sum_gas_tot = gas.RadiationAbsorbedTot.sum()
-        sum_star_tot = stars.RadiationEmittedTot.sum()
+        if snap.has_stars:
+            sum_star_tot = stars.RadiationEmittedTot.sum()
+        else:
+            sum_star_tot = 0.
 
         if sum_gas_tot != sum_star_tot:
             print("- checking hydro sanity pt2; snapshot", snap.snapnr)
@@ -244,24 +247,26 @@ def check_stars_sanity(snapdata):
     - total calls keep increasing?
     """
 
-    nsnaps = len(snapdata)
-    npart = snapdata[0].stars.coords.shape[0]
-
     print("Checking stars")
+
+    nsnaps = len(snapdata)
 
     # ----------------------------------------------
     #  check consistency of individual snapshots
     # ----------------------------------------------
     for snap in snapdata:
+        if not snap.has_stars:
+            continue
 
         this = snap.stars
+        nspart = snapdata[0].stars.coords.shape[0]
 
         if hydro_controlled_injection:
             if (this.EmissionRateSet != 1).any():
                 print("- checking stars sanity pt2", snap.snapnr)
                 print("--- Emisison Rates not consistent")
                 count = 0
-                for i in range(npart):
+                for i in range(nspart):
                     if this.EmissionRateSet[i] != 1:
                         count += 1
                         if print_diffs:

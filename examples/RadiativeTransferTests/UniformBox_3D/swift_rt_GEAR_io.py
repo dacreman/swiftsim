@@ -75,8 +75,7 @@ class RTSnapData(object):
         self.ncells = None
         self.boxsize = None
         self.time = None
-
-        self.cumulative_injected_energy = None
+        self.has_stars = True
 
         self.nstars = None
         self.npart = None
@@ -96,6 +95,7 @@ class Rundata(object):
 
         self.hydro_controlled_injection = False
         self.use_const_emission_rate = False
+        self.has_stars = False #assume we don't have stars, check while reading in
 
         self.ngroups = 0  # photon frequency groups
         self.const_emission_rates = None
@@ -228,59 +228,34 @@ def get_snap_data(prefix="output", skip_snap_zero=False, skip_last_snap=False):
         Gas.coords = data.gas.coordinates
         Gas.h = data.gas.smoothing_lengths
         Gas.PhotonEnergies = swiftsimio.cosmo_array(
-            [
-                data.gas.photon_energies.group1,
-                data.gas.photon_energies.group2,
-                data.gas.photon_energies.group3,
-                data.gas.photon_energies.group4,
-            ]
+            [ getattr(data.gas.photon_energies, "group"+str(g)) for g in range(1, rundata.ngroups + 1) ]
         ).T
 
         Gas.PhotonFluxes = swiftsimio.cosmo_array(
-            (
-                unyt.uvstack(
-                    (
-                        data.gas.photon_fluxes.Group1X,
-                        data.gas.photon_fluxes.Group1Y,
-                        data.gas.photon_fluxes.Group1Z,
-                    )
-                ),
-                unyt.uvstack(
-                    (
-                        data.gas.photon_fluxes.Group2X,
-                        data.gas.photon_fluxes.Group2Y,
-                        data.gas.photon_fluxes.Group2Z,
-                    )
-                ),
-                unyt.uvstack(
-                    (
-                        data.gas.photon_fluxes.Group3X,
-                        data.gas.photon_fluxes.Group3Y,
-                        data.gas.photon_fluxes.Group3Z,
-                    )
-                ),
-                unyt.uvstack(
-                    (
-                        data.gas.photon_fluxes.Group4X,
-                        data.gas.photon_fluxes.Group4Y,
-                        data.gas.photon_fluxes.Group4Z,
-                    )
-                ),
-            ),
+            [ unyt.uvstack([getattr(data.gas.photon_fluxes, "Group"+str(g)+d) for d in ("X", "Y", "Z") ]) for g in range(1, rundata.ngroups+1)],
             data.gas.photon_fluxes.Group1X.units,
         ).T
 
-        #  Get star data
-        Stars = RTStarData()
-        Stars.IDs = data.stars.particle_ids
-        Stars.coords = data.stars.coordinates
-        Stars.h = data.stars.smoothing_lengths
-        Stars.InjectedPhotonEnergy = data.stars.rtdebug_injected_photon_energy
-
         newsnap.gas = Gas
-        newsnap.stars = Stars
-        newsnap.nstars = Stars.IDs.shape[0]
         newsnap.npart = Gas.IDs.shape[0]
+
+        #  Get star data
+        try:
+            Stars = RTStarData()
+            Stars.IDs = data.stars.particle_ids
+            Stars.coords = data.stars.coordinates
+            Stars.h = data.stars.smoothing_lengths
+            Stars.InjectedPhotonEnergy = data.stars.rtdebug_injected_photon_energy
+            newsnap.stars = Stars
+            newsnap.nstars = Stars.IDs.shape[0]
+        except AttributeError:
+            Stars = RTStarData()
+            newsnap.has_stars = False
+            newsnap.nstars = 0
+
         snapdata.append(newsnap)
+
+    for snap in snapdata:
+        rundata.has_stars = rundata.has_stars or snap.has_stars
 
     return snapdata, rundata

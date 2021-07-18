@@ -58,6 +58,8 @@ float_particle_sum_comparison_tolerance = 5e-4
 # tolerance for meshless energy distribution scheme during injeciton comparison
 float_psi_comparison_tolerance = 5e-4
 
+#-------------------------------------------------------------------------------
+
 
 if len(argv) > 1:
     file_prefix = argv[1]
@@ -97,20 +99,25 @@ def check_injection(snapdata, rundata):
             if break_on_diff:
                 quit()
 
-        injected_energies = snap.stars.InjectedPhotonEnergy
-        ok = np.isfinite(injected_energies)
-        if not ok.all():
-            print("In snapshot", snap.snapnr, ":")
-            print(
-                "Found NaNs/infs in star injected energies:", np.count_nonzero(ok == 0)
-            )
-            if break_on_diff:
-                quit()
+        if snap.has_stars:
+            injected_energies = snap.stars.InjectedPhotonEnergy
+            ok = np.isfinite(injected_energies)
+            if not ok.all():
+                print("In snapshot", snap.snapnr, ":")
+                print(
+                    "Found NaNs/infs in star injected energies:", np.count_nonzero(ok == 0)
+                )
+                if break_on_diff:
+                    quit()
 
     # ----------------------------------------------------------------
     # Check 1: Make sure the right amount of energy has been injected
     # into the gas
     # ----------------------------------------------------------------
+
+    if not rundata.has_stars:
+        print("Found no stars in run. Skipping injection tests")
+        return
 
     emission_rates = rundata.const_emission_rates
     ngroups = rundata.ngroups
@@ -126,7 +133,10 @@ def check_injection(snapdata, rundata):
         dt = snap.time - initial_time
         # sum of each group over all particles
         photon_energies = np.sum(snap.gas.PhotonEnergies, axis=0)
-        injected_energies = np.sum(snap.stars.InjectedPhotonEnergy, axis=0)
+        if snap.has_stars:
+            injected_energies = np.sum(snap.stars.InjectedPhotonEnergy, axis=0)
+        else:
+            injected_energies = np.zeros(ngroups, dtype=np.float)
 
         for g in range(ngroups):
             energy_expected = initial_energies[g] + injected_energies[g]
@@ -159,7 +169,10 @@ def check_injection(snapdata, rundata):
     # at which all stars have been active at least once to do this test
     # correctly.)
     initial_time = snapdata[1].time
-    emission_at_initial_time = snapdata[1].stars.InjectedPhotonEnergy.sum(axis=0)
+    if snapdata[1].has_stars:
+        emission_at_initial_time = snapdata[1].stars.InjectedPhotonEnergy.sum(axis=0)
+    else:
+        emission_at_initial_time = np.zeros(rundata.ngroups, dtype=np.float) * unyt.erg
 
     if rundata.use_const_emission_rate and not rundata.hydro_controlled_injection:
         if len(snapdata) <= 2:
@@ -171,10 +184,13 @@ def check_injection(snapdata, rundata):
             snaps_for_plot = []
             for snap in snapdata[2:]:
                 dt = snap.time - initial_time
-                injected_energies = (
-                    snap.stars.InjectedPhotonEnergy.sum(axis=0)
-                    - emission_at_initial_time
-                )
+                if snap.has_stars:
+                    injected_energies = (
+                        snap.stars.InjectedPhotonEnergy.sum(axis=0)
+                        - emission_at_initial_time
+                    )
+                else:
+                    injected_energies = np.zeros(ngroups) * unyt.erg
                 energies_expected = snap.nstars * emission_rates * dt
                 energies_expected = energies_expected.to(injected_energies.units)
 
