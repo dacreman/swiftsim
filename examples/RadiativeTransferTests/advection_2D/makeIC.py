@@ -109,9 +109,12 @@ def initial_condition(x):
     sigma = 0.1 * boxsize
     mean = 0.5 * boxsize
     amplitude = 2.0
+    baseline = 1.0
 
-    E = amplitude * np.exp(
-        -((x[0] - mean) ** 2 + (x[1] - mean) ** 2) / (2 * sigma ** 2)
+    E = (
+        amplitude
+        * np.exp(-((x[0] - mean) ** 2 + (x[1] - mean) ** 2) / (2 * sigma ** 2))
+        + baseline
     )
     F = np.zeros(3, dtype=np.float)
     F[0] = c * E * 1.414213562  # sqrt(2)

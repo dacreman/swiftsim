@@ -21,7 +21,6 @@ fi
     --stars \
     --feedback \
     --external-gravity \
-    --steps 200 \
     ./rt_advection2D.yml 2>&1 | tee output.log
 
 python3 ./plotSolution.py
